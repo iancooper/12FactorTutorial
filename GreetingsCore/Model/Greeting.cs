@@ -1,8 +1,11 @@
-﻿namespace GreetingsCore.Model
+﻿using System;
+using GreetingsCore.Ports.Repositories;
+
+namespace GreetingsCore.Model
 {
-    public class Greeting
+    public class Greeting : IEntity
     {
-        public int Id { get; set; } 
+        public Guid Id { get; set; } 
         public string Message { get; set; }
     }
 }
