@@ -139,7 +139,7 @@ namespace GreetingsApp.Adapters.Configuration
        
         private void InitializeContainer(IApplicationBuilder app)
         {
-            _container.Register<DbContextOptions<GreetingContext>>( () => new DbContextOptionsBuilder<GreetingContext>().UseMySql(Configuration["Database:ToDo"]).Options, Lifestyle.Singleton);
+            _container.Register<DbContextOptions<GreetingContext>>( () => new DbContextOptionsBuilder<GreetingContext>().UseMySql(Configuration["Database:Greetings"]).Options, Lifestyle.Singleton);
             
             // Add application presentation components:
             _container.RegisterMvcControllers(app);
