@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using GreetingsCore.Adapters.ViewModels;
+using GreetingsCore.Ports;
+using GreetingsCore.Ports.Commands;
 using Microsoft.AspNetCore.Mvc;
 using Paramore.Brighter;
 using Paramore.Darker;
@@ -24,25 +26,35 @@ namespace GreetingsApp.Adapters.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return Ok();
+            var greetings = await _queryProcessor.ExecuteAsync(new GreetingsAllQuery());
+            return Ok(greetings.Greetings);
         }
 
         [HttpGet("{id}", Name = "GetGreeting")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            return Ok();
+            var greeting = await _queryProcessor.ExecuteAsync(new GreetingsByIdQuery(id));
+            return Ok(greeting);
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] AddGreetingRequest request)
         {
-            return Ok();
+            var newGreetingId = Guid.NewGuid();
+            var addGreetingCommand = new AddGreetingCommand(newGreetingId, request.Message);
+
+            await _commandProcessor.SendAsync(addGreetingCommand);
+
+            var addedGreeting = await _queryProcessor.ExecuteAsync(new GreetingsByIdQuery(newGreetingId));
+            
+            return Ok(addedGreeting);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-
+            var deleteGreetingCommand = new DeleteGreetingCommand(id);
+            await _commandProcessor.SendAsync(deleteGreetingCommand);
             return Ok();
         }
     }

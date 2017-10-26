@@ -21,4 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GreetingsCore\GreetingsCore.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="out" />
+  </ItemGroup>
 </Project>
