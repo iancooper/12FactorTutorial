@@ -11,11 +11,11 @@ using Paramore.Brighter.Policies.Attributes;
 
 namespace GreetingsCore.Ports.Handlers
 {
-    public class GreetingCommandHandler : RequestHandlerAsync<GreetingCommand>
+    public class AddGreetingCommandHandlerAsync : RequestHandlerAsync<AddGreetingCommand>
     {
         private readonly DbContextOptions<GreetingContext> _options;
 
-        public GreetingCommandHandler(DbContextOptions<GreetingContext> options)
+        public AddGreetingCommandHandlerAsync(DbContextOptions<GreetingContext> options)
         {
             _options = options;
         }
@@ -23,7 +23,7 @@ namespace GreetingsCore.Ports.Handlers
         [RequestLoggingAsync(step: 1, timing: HandlerTiming.Before)]
         [UsePolicyAsync(policy: CommandProcessor.CIRCUITBREAKERASYNC, step:2)]
         [UsePolicyAsync(policy: CommandProcessor.RETRYPOLICYASYNC, step: 3)]
-         public override async Task<GreetingCommand> HandleAsync(GreetingCommand command, CancellationToken cancellationToken = new CancellationToken())
+         public override async Task<AddGreetingCommand> HandleAsync(AddGreetingCommand command, CancellationToken cancellationToken = new CancellationToken())
         {
             using (var uow = new GreetingContext(_options))
             {

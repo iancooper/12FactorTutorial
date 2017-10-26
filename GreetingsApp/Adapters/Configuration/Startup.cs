@@ -158,9 +158,9 @@ namespace GreetingsApp.Adapters.Configuration
             //create handler 
             var servicesHandlerFactory = new ServicesHandlerFactoryAsync(_container);
             var subscriberRegistry = new SubscriberRegistry();
-            _container.Register<IHandleRequestsAsync<GreetingCommand>, GreetingCommandHandler>(Lifestyle.Scoped);
+            _container.Register<IHandleRequestsAsync<AddGreetingCommand>, AddGreetingCommandHandlerAsync>(Lifestyle.Scoped);
 
-            subscriberRegistry.RegisterAsync<GreetingCommand, GreetingCommandHandler>();
+            subscriberRegistry.RegisterAsync<AddGreetingCommand, AddGreetingCommandHandlerAsync>();
 
             //create policies
             var retryPolicy = Policy.Handle<Exception>().WaitAndRetry(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
