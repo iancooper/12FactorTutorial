@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using GreetingsCore.Adapters.BrighterFactories;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.DI;
@@ -18,12 +19,16 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Paramore.Brighter;
 using Paramore.Darker;
+using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Builder;
+using Paramore.Darker.Policies;
+using Paramore.Darker.QueryLogging;
 using Paramore.Darker.SimpleInjector;
 using Polly;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 using SimpleInjector.Lifestyles;
+using PolicyRegistry = Paramore.Brighter.PolicyRegistry;
 
 namespace GreetingsApp.Adapters.Configuration
 {
@@ -104,7 +109,7 @@ namespace GreetingsApp.Adapters.Configuration
         {
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
-
+            
             services.AddMvc();
 
             services.AddCors(options =>
@@ -161,10 +166,20 @@ namespace GreetingsApp.Adapters.Configuration
         private void RegisterQueryProcessor()
         {
             
+            var retryPolicy = Policy.Handle<Exception>().WaitAndRetryAsync(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
+            var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
+            var policyRegistry = new Paramore.Darker.Policies.PolicyRegistry
+            {
+                {Paramore.Darker.Policies.Constants.RetryPolicyName, retryPolicy}, 
+                {Paramore.Darker.Policies.Constants.CircuitBreakerPolicyName, circuitBreakerPolicy}
+            };
+            
             var queryProcessor = QueryProcessorBuilder.With()
-                .SimpleInjectorHandlers(_container, opts =>
+                .SimpleInjectorHandlers(_container, opts => 
                     opts.WithQueriesAndHandlersFromAssembly(typeof(GreetingsAllQuery).Assembly))
                 .InMemoryQueryContextFactory()
+                .Policies(policyRegistry)
+                .JsonQueryLogging()
                 .Build();
 
                 _container.Register<IQueryProcessor>(() => queryProcessor, Lifestyle.Singleton);
