@@ -80,7 +80,7 @@ namespace GreetingsWorker
                     .RequestContextFactory(new InMemoryRequestContextFactory())
                     .Build())
                 .MessageMappers(messageMapperRegistry)
-                .DefaultChannelFactory(new InputChannelFactory(rmqMessageConsumerFactory, null))
+                .DefaultChannelFactory(new InputChannelFactory(rmqMessageConsumerFactory))
                 .Connections(new Connection[]
                 {
                     new Connection<RegreetCommand>(

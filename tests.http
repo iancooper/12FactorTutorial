@@ -3,7 +3,7 @@
 GET http://localhost:5000/api/Greetings HTTP/1.1
 
 
-### Now add some Greetings
+### Now add a Greetings
 
 POST http://localhost:5000/api/Greetings HTTP/1.1
 Content-Type: application/json
@@ -12,5 +12,30 @@ Content-Type: application/json
     "Message" : "Hello World"
 }
 
+### Now see that greeting
 
+GET http://localhost:5000/api/Greetings/{xxxx-xxxx-xxxx-xxx} HTTP/1.1
+
+
+### Now add some more greetings
+
+POST http://localhost:5000/api/Greetings HTTP/1.1
+Content-Type: application/json
+
+{
+    "Message" : "Hello Mary"
+}
+
+
+POST http://localhost:5000/api/Greetings HTTP/1.1
+Content-Type: application/json
+
+{
+    "Message" : "Hello Alice"
+}
+
+
+### Now see all the greeetings
+
+GET http://localhost:5000/api/Greetings HTTP/1.1
 

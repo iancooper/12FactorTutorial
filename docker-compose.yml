@@ -8,6 +8,8 @@ services:
     environment:
       - Database__Greetings=Server=greetings_db;Uid=root;Pwd=root;Database=Greetings
       - Database__GreetingsDb=Server=greetings_db;Uid=root;Pwd=root
+      - Database__MessageStore=Server=todo_db;Uid=root;Pwd=root;Database=Greetings
+      - Database__MessageTableName=Messages
     links:
       - rabbit:greetings_broker
       - mysql:greetings_db

@@ -6,13 +6,11 @@ namespace GreetingsCore.Ports.Commands
     public class RegreetCommand : Command
     {
         public Guid CorrelationId { get; }
-        public string Message { get; }
-        public RegreetCommand(Guid correlationId, string message) : this(Guid.NewGuid(), correlationId, message) {}
+        public RegreetCommand(Guid correlationId) : this(Guid.NewGuid(), correlationId) {}
         
-        public RegreetCommand(Guid id, Guid correlationId, string message) : base(id)
+        public RegreetCommand(Guid id, Guid correlationId) : base(id)
         {
             CorrelationId = correlationId;
-            Message = message;
         }
     }
 }
