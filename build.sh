@@ -1,6 +1,6 @@
 dotnet restore
 dotnet build
-cd GreetingsAll
+cd GreetingsApp
 rm -rf out
 dotnet publish -c Release -o out
 cd ..
