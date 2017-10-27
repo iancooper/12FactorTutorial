@@ -2,6 +2,7 @@
 using GreetingsCore.Adapters.BrighterFactories;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.DI;
+using GreetingsCore.Ports;
 using GreetingsCore.Ports.Commands;
 using GreetingsCore.Ports.Handlers;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +17,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Paramore.Brighter;
+using Paramore.Darker;
+using Paramore.Darker.Builder;
+using Paramore.Darker.SimpleInjector;
 using Polly;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
@@ -89,7 +93,7 @@ namespace GreetingsApp.Adapters.Configuration
 
             app.UseMvc();
 
-            CheckDbIsUp(Configuration["Database:GreetingDb"]);
+            CheckDbIsUp(Configuration["Database:GreetingsDb"]);
 
             EnsureDatabaseCreated();
 
@@ -146,11 +150,24 @@ namespace GreetingsApp.Adapters.Configuration
             _container.RegisterMvcViewComponents(app);
 
             RegisterCommandProcessor();
+            RegisterQueryProcessor();
 
             // Cross-wire ASP.NET services (if any). For instance:
             _container.CrossWire<ILoggerFactory>(app);
             // NOTE: Prevent cross-wired instances as much as possible.
             // See: https://simpleinjector.org/blog/2016/07/
+        }
+
+        private void RegisterQueryProcessor()
+        {
+            
+            var queryProcessor = QueryProcessorBuilder.With()
+                .SimpleInjectorHandlers(_container, opts =>
+                    opts.WithQueriesAndHandlersFromAssembly(typeof(GreetingsAllQuery).Assembly))
+                .InMemoryQueryContextFactory()
+                .Build();
+
+                _container.Register<IQueryProcessor>(() => queryProcessor, Lifestyle.Singleton);
         }
 
         private void RegisterCommandProcessor()
