@@ -25,7 +25,7 @@ namespace GreetingsCore.Ports.Handlers
             Greeting greeting;
             using (var uow = new GreetingContext(_options))
             {
-                greeting = uow.Greetings.SingleOrDefault(g => g.Id == command.GreetingId);
+                greeting = uow.Greetings.SingleOrDefault(g => g.Id == command.GreetingIdAsGuid());
                 
             }
 

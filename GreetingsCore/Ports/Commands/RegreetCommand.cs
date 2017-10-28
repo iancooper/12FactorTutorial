@@ -5,7 +5,7 @@ namespace GreetingsCore.Ports.Commands
 {
     public class RegreetCommand : Command
     {
-        public Guid GreetingId { get; }
+        public string GreetingId { get; set; }
 
         public RegreetCommand() : base(Guid.NewGuid())
         {
@@ -14,7 +14,13 @@ namespace GreetingsCore.Ports.Commands
         
         public RegreetCommand(Guid greetingId) : base(Guid.NewGuid())
         {
-            GreetingId = greetingId;
+            GreetingId = greetingId.ToString();
+        }
+
+        public Guid GreetingIdAsGuid()
+        {
+            //Newtonsoft JSON can't tell it has a GUID, so convert here for it
+            return Guid.Parse(GreetingId);
         }
     }
 }
