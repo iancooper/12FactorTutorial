@@ -5,12 +5,16 @@ namespace GreetingsCore.Ports.Commands
 {
     public class RegreetCommand : Command
     {
-        public Guid CorrelationId { get; }
-        public RegreetCommand(Guid correlationId) : this(Guid.NewGuid(), correlationId) {}
-        
-        public RegreetCommand(Guid id, Guid correlationId) : base(id)
+        public Guid GreetingId { get; }
+
+        public RegreetCommand() : base(Guid.NewGuid())
         {
-            CorrelationId = correlationId;
+            //required for de-serialization
+        }
+        
+        public RegreetCommand(Guid greetingId) : base(Guid.NewGuid())
+        {
+            GreetingId = greetingId;
         }
     }
 }

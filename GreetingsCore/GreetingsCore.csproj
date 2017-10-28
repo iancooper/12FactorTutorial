@@ -12,9 +12,4 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.0.1-preview-10073" />
     <PackageReference Include="SimpleInjector" Version="4.0.8" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.EntityFrameworkCore, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-      <HintPath>..\..\..\..\..\.nuget\packages\microsoft.entityframeworkcore\1.1.2\lib\netstandard1.3\Microsoft.EntityFrameworkCore.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>

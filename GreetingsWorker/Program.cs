@@ -54,12 +54,11 @@ namespace GreetingsWorker
 
         private static void DatabaseOptionsFactory(IConfigurationRoot configuration, Container container)
         {
-            var options = new DbContextOptionsBuilder<GreetingContext>()
-                .UseMySql(configuration["Database:Greetings"])
-                .Options;
-
-            container.Register(() => options);
-            
+            container.Register<DbContextOptions<GreetingContext>>( 
+                () => new DbContextOptionsBuilder<GreetingContext>()
+                    .UseMySql(configuration["Database:Greetings"])
+                    .Options, 
+                Lifestyle.Singleton);          
         }
 
         private static void EnsureDatabaseCreated(Container container)

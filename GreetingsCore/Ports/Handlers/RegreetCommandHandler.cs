@@ -25,25 +25,36 @@ namespace GreetingsCore.Ports.Handlers
             Greeting greeting;
             using (var uow = new GreetingContext(_options))
             {
-                greeting = uow.Greetings.Single(g => g.Id == command.CorrelationId);
+                greeting = uow.Greetings.SingleOrDefault(g => g.Id == command.GreetingId);
+                
             }
 
             //we don't want to terminate, so on to the next message
             if (greeting == null)
             {
-                return base.Handle(command);
+                Console.WriteLine("Received Greeting. Message Follows");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("Could not read message}");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("Greeting Id from Originator Follows");
+                 Console.WriteLine("----------------------------------");
+                Console.WriteLine(command.GreetingId.ToString());
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("Message Ends");
             }
-            
-            Console.WriteLine("Received Greeting. Message Follows");
-            Console.WriteLine("----------------------------------");
-            Console.WriteLine(greeting.Message);
-            Console.WriteLine("----------------------------------");
-            Console.WriteLine("Correlation Id from Originator Follows");
-            Console.WriteLine("----------------------------------");
-            Console.WriteLine(command.CorrelationId.ToString());
-            Console.WriteLine("----------------------------------");
-            Console.WriteLine("Message Ends");
-  
+            else
+            {
+
+                Console.WriteLine("Received Greeting. Message Follows");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine(greeting.Message);
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("Greeting Id from Originator Follows");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine(command.GreetingId.ToString());
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("Message Ends");
+            }
             return base.Handle(command);
         }
     }

@@ -85,6 +85,27 @@ namespace GreetingsApp.Adapters.Configuration
             });
         }
         
+        private static void CreateMessageTable(string dataSourceTestDb, string tableNameMessages)
+        {
+            try
+            {
+                using (var sqlConnection = new MySqlConnection(dataSourceTestDb))
+                {
+                    sqlConnection.Open();
+                    using (var command = sqlConnection.CreateCommand())
+                    {
+                        command.CommandText = MySqlMessageStoreBuilder.GetDDL(tableNameMessages);
+                        command.ExecuteScalar();
+                    }
+                }
+                
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine($"Issue with creating MessageStore table, {e.Message}");
+            }
+        }
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
@@ -106,6 +127,8 @@ namespace GreetingsApp.Adapters.Configuration
             CheckDbIsUp(Configuration["Database:GreetingsDb"]);
 
             EnsureDatabaseCreated();
+            
+            CreateMessageTable(Configuration["Database:MessageStore"], Configuration["Database:MessageTableName"]);
 
         }
         
@@ -217,11 +240,14 @@ namespace GreetingsApp.Adapters.Configuration
             };
 
             var messagingGatewayConfiguration = RmqGatewayBuilder.With.Uri(new Uri(Configuration["BROKER"]))
-                .Exchange(Configuration["paramore.brighter.exchange"])
+                .Exchange("paramore.brighter.exchange")
                 .DefaultQueues();
 
             var gateway = new RmqMessageProducer(messagingGatewayConfiguration);
-            var sqlMessageStore = new MySqlMessageStore(new MySqlMessageStoreConfiguration(Configuration["Database:MessageStore"], Configuration["Database:MessageTableName"]));
+            var sqlMessageStore = new MySqlMessageStore(
+                new MySqlMessageStoreConfiguration(Configuration["Database:MessageStore"], 
+                    Configuration["Database:MessageTableName"])
+                );
 
              var messageMapperFactory = new MessageMapperFactory(_container);
             _container.Register<IAmAMessageMapper<RegreetCommand>, RegreetCommandMessageMapper>();
@@ -239,7 +265,7 @@ namespace GreetingsApp.Adapters.Configuration
             var commandProcessor = CommandProcessorBuilder.With()
                 .Handlers(new Paramore.Brighter.HandlerConfiguration(subscriberRegistry, servicesHandlerFactory))
                 .Policies(policyRegistry)
-                .NoTaskQueues()
+                .TaskQueues(messagingConfiguration)
                 .RequestContextFactory(new Paramore.Brighter.InMemoryRequestContextFactory())
                 .Build();
 
