@@ -1,7 +1,9 @@
 ﻿using System;
+using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.Factories;
 using GreetingsCore.Ports.Commands;
 using GreetingsCore.Ports.Handlers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Paramore.Brighter;
 using Paramore.Brighter.MessagingGateway.RMQ;
@@ -18,17 +20,55 @@ namespace GreetingsWorker
         public static void Main(string[] args)
         {
 
+            var dispatcher = Configure();
+            dispatcher.Receive();
+
+            Console.WriteLine("Press Enter to stop ...");
+            Console.ReadLine();
+
+            dispatcher.End().Wait();
+        }
+
+        private static Dispatcher Configure()
+        {
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables();
 
             var configuration = builder.Build();
-            
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.LiterateConsole()
                 .CreateLogger();
 
             var container = new Container();
 
+            DatabaseOptionsFactory(configuration, container);
+
+            return RegisterDispatcher(container, configuration);
+        }
+
+        private static void DatabaseOptionsFactory(IConfigurationRoot configuration, Container container)
+        {
+            var options = new DbContextOptionsBuilder<GreetingContext>()
+                .UseMySql(configuration["Database:ToDo"])
+                .Options;
+
+            container.Register(() => options);
+            
+            EnsureDatabaseCreated(container);
+        }
+
+        private static void EnsureDatabaseCreated(Container container)
+        {
+            var contextOptions = container.GetInstance<DbContextOptions<GreetingContext>>();
+            using (var context = new GreetingContext(contextOptions))
+            {
+                context.Database.EnsureCreated();
+            }
+        }
+        
+        private static Dispatcher RegisterDispatcher(Container container, IConfigurationRoot configuration)
+        {
             var handlerFactory = new HandlerFactory(container);
             var messageMapperFactory = new MessageMapperFactory(container);
             container.Register<IHandleRequests<RegreetCommand>, RegreetCommandHandler>();
@@ -52,21 +92,21 @@ namespace GreetingsWorker
 
             var policyRegistry = new PolicyRegistry
             {
-                { CommandProcessor.RETRYPOLICY, retryPolicy },
-                { CommandProcessor.CIRCUITBREAKER, circuitBreakerPolicy }
+                {CommandProcessor.RETRYPOLICY, retryPolicy},
+                {CommandProcessor.CIRCUITBREAKER, circuitBreakerPolicy}
             };
 
             //create message mappers
             var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
             {
-                { typeof(RegreetCommand), typeof(RegreetCommandHandler) }
+                {typeof(RegreetCommand), typeof(RegreetCommandHandler)}
             };
 
             var amqpUri = configuration["BROKER"];
             //create the gateway
-            var rmqConnnection = new RmqMessagingGatewayConnection 
+            var rmqConnnection = new RmqMessagingGatewayConnection
             {
-                AmpqUri  = new AmqpUriSpecification(new Uri(amqpUri)),
+                AmpqUri = new AmqpUriSpecification(new Uri(amqpUri)),
                 Exchange = new Exchange("paramore.brighter.exchange"),
             };
 
@@ -90,12 +130,7 @@ namespace GreetingsWorker
                         timeoutInMilliseconds: 200)
                 }).Build();
 
-            dispatcher.Receive();
-
-            Console.WriteLine("Press Enter to stop ...");
-            Console.ReadLine();
-
-            dispatcher.End().Wait();
+            return dispatcher;
         }
     }
 }
