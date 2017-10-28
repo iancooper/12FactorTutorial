@@ -3,6 +3,7 @@ using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.Factories;
 using GreetingsCore.Ports.Commands;
 using GreetingsCore.Ports.Handlers;
+using GreetingsCore.Ports.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Paramore.Brighter;
@@ -44,18 +45,21 @@ namespace GreetingsWorker
 
             DatabaseOptionsFactory(configuration, container);
 
-            return RegisterDispatcher(container, configuration);
+            var dispatcher = RegisterDispatcher(container, configuration);
+            
+            EnsureDatabaseCreated(container);
+
+            return dispatcher;
         }
 
         private static void DatabaseOptionsFactory(IConfigurationRoot configuration, Container container)
         {
             var options = new DbContextOptionsBuilder<GreetingContext>()
-                .UseMySql(configuration["Database:ToDo"])
+                .UseMySql(configuration["Database:Greetings"])
                 .Options;
 
             container.Register(() => options);
             
-            EnsureDatabaseCreated(container);
         }
 
         private static void EnsureDatabaseCreated(Container container)
@@ -99,7 +103,7 @@ namespace GreetingsWorker
             //create message mappers
             var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
             {
-                {typeof(RegreetCommand), typeof(RegreetCommandHandler)}
+                {typeof(RegreetCommand), typeof(RegreetCommandMessageMapper)}
             };
 
             var amqpUri = configuration["BROKER"];
